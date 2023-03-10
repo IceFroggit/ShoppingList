@@ -8,7 +8,7 @@ import com.example.shoppinglist.domain.ShopListRepository
 //object является singletone, это нужно чтобы, что не получилось так, что на ожном экране мы раюотаем с одним репозиторием, а в другом экране с другим репозиторием
 
 object ShopListRepositoryImpl : ShopListRepository {
-    private val shopList = mutableListOf<ShopItem>()
+    private val shopList = sortedSetOf<ShopItem>({ p0, p1 -> p0.id.compareTo(p1.id) })
     private var autoIncrementId = 0
     private val shopListLD = MutableLiveData<List<ShopItem>>()
 
