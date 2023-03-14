@@ -20,7 +20,8 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         viewModel.mShopList.observe(this) {
-            shopListAdapter.shopList = it
+            //метод submitList вызывает новый поток внутри адаптера, в котором происходят все вычисления, когда заканчивает работу начение списка меняется
+            shopListAdapter.submitList(it)
         }
     }
 
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = shopListAdapter.shopList[viewHolder.adapterPosition]
+                val item = shopListAdapter.currentList[viewHolder.adapterPosition]
                 viewModel.deleteShopItem(item)
             }
 
