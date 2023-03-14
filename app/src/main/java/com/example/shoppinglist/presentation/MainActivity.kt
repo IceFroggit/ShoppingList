@@ -1,47 +1,79 @@
 package com.example.shoppinglist.presentation
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.example.shoppinglist.R
-import com.example.shoppinglist.domain.ShopItem
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
-    private lateinit var llShoplist: LinearLayout
+    private lateinit var shopListAdapter: ShopListAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        llShoplist = findViewById(R.id.ll_shop_list)
+        setupRecyclerView()
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         viewModel.mShopList.observe(this) {
-            showList(it)
+            shopListAdapter.shopList = it
         }
     }
 
-    private fun showList(list: List<ShopItem>) {
-        llShoplist.removeAllViews()
-        for (shopItem in list) {
-            val layoutId = if (shopItem.enabled) {
-                R.layout.item_shop_enabled
-            } else {
-                R.layout.item_shop_disabled
+    private fun setupRecyclerView() {
+        val rvShopList = findViewById<RecyclerView>(R.id.rv_shop_list)
+        with(rvShopList) {
+            shopListAdapter = ShopListAdapter()
+            adapter = shopListAdapter
+            //установление максимального размера пулов вьюхолдеров
+            recycledViewPool.setMaxRecycledViews(ShopListAdapter.VIEW_TYPE_ENABLED,
+                ShopListAdapter.MAX_POOL_SIZE)
+            recycledViewPool.setMaxRecycledViews(ShopListAdapter.VIEW_TYPE_DISABLED,
+                ShopListAdapter.MAX_POOL_SIZE)
+        }
+        setupLongClickListener()
+        setupClickListener()
+        setupSwipeListener(rvShopList)
+    }
+
+    private fun setupSwipeListener(rvShopList: RecyclerView?) {
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean {
+                return false
             }
-            val view = LayoutInflater.from(this).inflate(layoutId, llShoplist, false)
-            val tvName = view.findViewById<TextView>(R.id.tv_name)
-            val tvCount = view.findViewById<TextView>(R.id.tv_count)
-            tvName.text = shopItem.name
-            tvCount.text = shopItem.count.toString()
-            view.setOnLongClickListener {
-                viewModel.changeEnabledState(shopItem)
-                true
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val item = shopListAdapter.shopList[viewHolder.adapterPosition]
+                viewModel.deleteShopItem(item)
             }
-            llShoplist.addView(view)
+
+        }
+        val itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(rvShopList)
+    }
+
+    private fun setupClickListener() {
+        shopListAdapter.onShopItemClickListener = {
+            Log.d("View Information", it.toString())
         }
     }
+
+    private fun setupLongClickListener() {
+        shopListAdapter.onShopItemLongClickListener = {
+            viewModel.changeEnabledState(it)
+        }
+    }
+
+
 }

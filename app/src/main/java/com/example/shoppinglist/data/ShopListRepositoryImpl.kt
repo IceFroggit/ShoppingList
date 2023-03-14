@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.shoppinglist.domain.ShopItem
 import com.example.shoppinglist.domain.ShopListRepository
+import kotlin.random.Random
 
 //object является singletone, это нужно чтобы, что не получилось так, что на ожном экране мы раюотаем с одним репозиторием, а в другом экране с другим репозиторием
 
@@ -13,9 +14,9 @@ object ShopListRepositoryImpl : ShopListRepository {
     private val shopListLD = MutableLiveData<List<ShopItem>>()
 
     init {
-        for (i in 0 until 10){
-            val item = ShopItem("Name $i",i,true)
-            addShopItem(item )
+        for (i in 0 until 1000){
+            val item = ShopItem("Name $i",i, Random.nextBoolean())
+            addShopItem(item)
         }
     }
     override fun addShopItem(shopItem: ShopItem) {
