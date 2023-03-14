@@ -14,6 +14,7 @@ class ShopItemActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_item)
         viewModel = ViewModelProvider(this).get(ShopItemViewModel::class.java)
-
+        //todo delete liveData
+        viewModel.errorInputName.value = false
     }
 }
